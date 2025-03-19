@@ -36,7 +36,7 @@ export const Avatar = ({
   return (
     <div 
       className={cn(
-        'rounded-full flex items-center justify-center bg-secondary text-secondary-foreground overflow-hidden',
+        'rounded-full flex items-center justify-center bg-secondary text-secondary-foreground overflow-hidden transition-all duration-300 hover:shadow-[0_0_15px_rgba(229,9,20,0.5)] hover:scale-105',
         sizeClasses[size],
         className
       )}

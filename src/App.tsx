@@ -13,6 +13,7 @@ import Calendar from "./pages/Calendar";
 import Team from "./pages/Team";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import "./App.css";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,9 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <TaskProvider>
+        <div className="app-bg-container">
+          <div className="app-bg-overlay"></div>
+        </div>
         <Toaster />
         <Sonner />
         <BrowserRouter>

@@ -5,6 +5,7 @@ import { Navigation } from '../ui/Navigation';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Avatar } from '../common/Avatar';
 
 export const MainLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -24,11 +25,11 @@ export const MainLayout = () => {
   }, [isMobile]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-background/50 backdrop-blur-sm text-foreground">
+      {/* Sidebar with enhanced styling */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-sidebar transition-all duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-sidebar shadow-xl transition-all duration-300 ease-in-out",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -42,8 +43,8 @@ export const MainLayout = () => {
           isSidebarOpen ? "md:ml-64" : "ml-0"
         )}
       >
-        {/* Top Bar */}
-        <div className="flex h-16 items-center border-b border-border bg-background/50 backdrop-blur-sm px-4">
+        {/* Top Bar with glassmorphism */}
+        <div className="flex h-16 items-center border-b border-border bg-background/40 backdrop-blur-xl px-4 sticky top-0 z-10 shadow-sm">
           <button
             onClick={toggleSidebar}
             className="mr-4 p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
@@ -54,10 +55,7 @@ export const MainLayout = () => {
             <h1 className="text-xl font-semibold">TeamTrack Synergy</h1>
           </div>
           <div className="flex items-center gap-2">
-            {/* User avatar and profile dropdown would go here */}
-            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-              AM
-            </div>
+            <Avatar name="Admin User" size="sm" className="animate-pulse-subtle" />
           </div>
         </div>
 
@@ -67,10 +65,10 @@ export const MainLayout = () => {
         </main>
       </div>
 
-      {/* Mobile overlay */}
+      {/* Mobile overlay with blur effect */}
       {isMobile && isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-10 bg-black/50" 
+          className="fixed inset-0 z-10 bg-black/60 backdrop-blur-sm" 
           onClick={() => setIsSidebarOpen(false)}
         />
       )}

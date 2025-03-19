@@ -51,7 +51,26 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(229, 9, 20, 0.5);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(229, 9, 20, 0.8);
   }
 }
 
@@ -71,18 +90,77 @@
   .shimmer {
     @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/5 before:to-transparent;
   }
+  
+  /* Enhanced button hover effect */
+  .btn-hover {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .btn-hover::after {
+    @apply content-[''] absolute top-0 left-0 h-full w-0 bg-white/10 transition-all duration-300 ease-out;
+  }
+  
+  .btn-hover:hover::after {
+    @apply w-full;
+  }
+  
+  /* Glow effect */
+  .glow {
+    @apply transition-all duration-300;
+  }
+  
+  .glow:hover {
+    @apply shadow-[0_0_15px_rgba(229,9,20,0.5)];
+  }
+  
+  /* Scale effect */
+  .scale-hover {
+    @apply transition-transform duration-300;
+  }
+  
+  .scale-hover:hover {
+    @apply transform scale-105;
+  }
 }
 
 @layer components {
   .task-card {
-    @apply glass-card p-4 transition-all duration-300 hover:translate-y-[-3px];
+    @apply glass-card p-4 transition-all duration-300 hover:translate-y-[-3px] hover:shadow-[0_8px_20px_rgba(0,0,0,0.2)];
   }
   
   .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-3 text-sidebar-foreground/80 rounded-lg transition-all duration-300 hover:text-sidebar-foreground hover:bg-sidebar-accent;
+    @apply flex items-center gap-3 px-4 py-3 text-sidebar-foreground/80 rounded-lg transition-all duration-300 hover:text-sidebar-foreground hover:bg-sidebar-accent relative overflow-hidden;
   }
   
   .sidebar-link.active {
     @apply bg-sidebar-primary/10 text-primary font-medium;
+  }
+  
+  .sidebar-link.active::before {
+    content: '';
+    @apply absolute left-0 top-0 h-full w-1 bg-primary;
+  }
+  
+  .sidebar-link:hover::after {
+    content: '';
+    @apply absolute inset-0 bg-white/5 transform scale-x-100 transition-transform duration-300;
+  }
+  
+  /* Form elements */
+  .form-input {
+    @apply bg-secondary/50 border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300;
+  }
+  
+  .form-select {
+    @apply form-input appearance-none bg-no-repeat bg-[right_0.5rem_center] pr-8;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 active:bg-primary/80 transition-all duration-300 shadow-md hover:shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground px-4 py-2 rounded-md hover:bg-secondary/90 active:bg-secondary/80 transition-all duration-300;
   }
 }
