@@ -2,10 +2,10 @@
 import React from 'react';
 import { useTaskContext } from '@/context/TaskContext';
 import { 
-  PieChart, 
-  Pie, 
-  Cell, 
   ResponsiveContainer,
+  PieChart as RechartsDonut,
+  Pie,
+  Cell,
   BarChart,
   Bar,
   XAxis,
@@ -19,8 +19,15 @@ import {
   getTeamTaskData,
   getWeeklyCompletionData
 } from '@/lib/data';
+import { Progress } from "@/components/ui/progress";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from "@/components/ui/chart";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+// Modern color palette that fits our theme
+const COLORS = ['#e50914', '#00C49F', '#FFBB28', '#FF8042'];
 const PRIORITY_COLORS = {
   'Low': '#3498db',
   'Medium': '#f39c12',
@@ -35,78 +42,170 @@ export const DashboardCharts = () => {
   const teamData = getTeamTaskData();
   const weeklyData = getWeeklyCompletionData();
 
-  return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <ChartCard title="Task Status">
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
+  const DonutChart = ({ data, colors, title, dataKey = "value" }) => (
+    <ChartCard title={title}>
+      <div className="flex items-center justify-center">
+        <ResponsiveContainer width="100%" height={280}>
+          <RechartsDonut>
             <Pie
-              data={statusData}
+              data={data}
               cx="50%"
               cy="50%"
-              labelLine={false}
+              innerRadius={60}
               outerRadius={80}
               fill="#8884d8"
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              paddingAngle={5}
+              dataKey={dataKey}
+              animationDuration={1000}
+              animationBegin={0}
             >
-              {statusData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      </ChartCard>
-      
-      <ChartCard title="Task Priority">
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={priorityData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-            >
-              {priorityData.map((entry) => (
+              {data.map((entry, index) => (
                 <Cell 
-                  key={`cell-${entry.name}`} 
-                  fill={PRIORITY_COLORS[entry.name as keyof typeof PRIORITY_COLORS]} 
+                  key={`cell-${index}`} 
+                  fill={colors[index % colors.length] || colors['High']} 
+                  className="hover:opacity-90 transition-opacity cursor-pointer"
+                  stroke="rgba(0,0,0,0.1)"
+                  strokeWidth={1}
                 />
               ))}
             </Pie>
-            <Tooltip />
-          </PieChart>
+            <ChartTooltip 
+              content={(props) => 
+                <ChartTooltipContent 
+                  {...props}
+                  formatter={(value, name) => [`${value} (${Math.round(value/data.reduce((a,b) => a + b.value, 0)*100)}%)`, name]}
+                />
+              } 
+            />
+          </RechartsDonut>
         </ResponsiveContainer>
-      </ChartCard>
+      </div>
       
+      <div className="mt-4 space-y-3">
+        {data.map((item, index) => (
+          <div key={index} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div 
+                  className="w-3 h-3 rounded-sm mr-2" 
+                  style={{ 
+                    backgroundColor: typeof colors === 'object' && !Array.isArray(colors) 
+                      ? colors[item.name] 
+                      : colors[index % colors.length] 
+                  }}
+                />
+                <span className="text-sm font-medium">{item.name}</span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {Math.round(item.value/data.reduce((a,b) => a + b.value, 0)*100)}%
+              </span>
+            </div>
+            <Progress 
+              value={Math.round(item.value/data.reduce((a,b) => a + b.value, 0)*100)} 
+              className="h-1.5"
+              style={{ 
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                '--progress-foreground': typeof colors === 'object' && !Array.isArray(colors) 
+                  ? colors[item.name] 
+                  : colors[index % colors.length]
+              } as React.CSSProperties}
+            />
+          </div>
+        ))}
+      </div>
+    </ChartCard>
+  );
+
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 relative">
+      {/* Background image with overlay */}
+      <div className="absolute top-0 left-0 w-full h-full -z-10 opacity-10">
+        <img 
+          src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=2000" 
+          alt="Dashboard background" 
+          className="object-cover w-full h-full rounded-xl"
+        />
+      </div>
+      
+      {/* Task Status Donut */}
+      <DonutChart 
+        data={statusData} 
+        colors={COLORS} 
+        title="Task Status"
+      />
+      
+      {/* Task Priority Donut */}
+      <DonutChart 
+        data={priorityData} 
+        colors={PRIORITY_COLORS} 
+        title="Task Priority" 
+      />
+      
+      {/* Team workload */}
       <ChartCard title="Team Workload">
-        <ResponsiveContainer width="100%" height={250}>
+        <ChartContainer 
+          config={{
+            tasks: { 
+              label: "Tasks",
+              color: "#e50914" 
+            }
+          }}
+          className="h-[300px]"
+        >
           <BarChart data={teamData}>
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="tasks" fill="#e50914" />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Bar 
+              dataKey="tasks" 
+              fill="#e50914" 
+              radius={[4, 4, 0, 0]} 
+              className="hover:opacity-80 transition-opacity"
+              animationDuration={1500}
+              animationBegin={300}
+            />
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </ChartCard>
       
+      {/* Weekly Task Activity */}
       <ChartCard title="Weekly Task Activity">
-        <ResponsiveContainer width="100%" height={250}>
+        <ChartContainer 
+          config={{
+            created: { 
+              label: "Created",
+              color: "#3498db" 
+            },
+            completed: { 
+              label: "Completed",
+              color: "#2ecc71" 
+            }
+          }}
+          className="h-[300px]"
+        >
           <BarChart data={weeklyData}>
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
+            <ChartTooltip content={<ChartTooltipContent />} />
             <Legend />
-            <Bar dataKey="created" fill="#3498db" />
-            <Bar dataKey="completed" fill="#2ecc71" />
+            <Bar 
+              dataKey="created" 
+              fill="#3498db" 
+              radius={[4, 4, 0, 0]} 
+              className="hover:opacity-80 transition-opacity"
+              animationDuration={1500}
+              animationBegin={0}
+            />
+            <Bar 
+              dataKey="completed" 
+              fill="#2ecc71" 
+              radius={[4, 4, 0, 0]}
+              className="hover:opacity-80 transition-opacity" 
+              animationDuration={1500}
+              animationBegin={300}
+            />
           </BarChart>
-        </ResponsiveContainer>
+        </ChartContainer>
       </ChartCard>
     </div>
   );
@@ -119,8 +218,11 @@ interface ChartCardProps {
 
 const ChartCard = ({ title, children }: ChartCardProps) => {
   return (
-    <div className="glass-card p-6">
-      <h3 className="mb-4 text-lg font-semibold">{title}</h3>
+    <div className="glass-card p-6 hover:shadow-[0_0_20px_rgba(229,9,20,0.2)] transition-all duration-500">
+      <h3 className="mb-4 text-lg font-semibold relative">
+        {title}
+        <span className="absolute bottom-0 left-0 w-12 h-0.5 bg-primary"></span>
+      </h3>
       {children}
     </div>
   );
