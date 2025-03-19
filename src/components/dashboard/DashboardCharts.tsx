@@ -69,49 +69,53 @@ export const DashboardCharts = () => {
                 />
               ))}
             </Pie>
-            <ChartTooltip 
-              content={(props) => 
-                <ChartTooltipContent 
-                  {...props}
-                  formatter={(value, name) => [`${value} (${Math.round(value/data.reduce((a,b) => a + b.value, 0)*100)}%)`, name]}
-                />
-              } 
+            <Tooltip 
+              formatter={(value, name) => {
+                const total = data.reduce((a, b) => a + (typeof b.value === 'number' ? b.value : 0), 0);
+                const percentage = total > 0 ? Math.round((Number(value) / total) * 100) : 0;
+                return [`${value} (${percentage}%)`, name];
+              }}
             />
           </RechartsDonut>
         </ResponsiveContainer>
       </div>
       
       <div className="mt-4 space-y-3">
-        {data.map((item, index) => (
-          <div key={index} className="space-y-1">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div 
-                  className="w-3 h-3 rounded-sm mr-2" 
-                  style={{ 
-                    backgroundColor: typeof colors === 'object' && !Array.isArray(colors) 
-                      ? colors[item.name] 
-                      : colors[index % colors.length] 
-                  }}
-                />
-                <span className="text-sm font-medium">{item.name}</span>
+        {data.map((item, index) => {
+          const total = data.reduce((a, b) => a + (typeof b.value === 'number' ? b.value : 0), 0);
+          const percentage = total > 0 ? Math.round((Number(item.value) / total) * 100) : 0;
+          
+          return (
+            <div key={index} className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div 
+                    className="w-3 h-3 rounded-sm mr-2" 
+                    style={{ 
+                      backgroundColor: typeof colors === 'object' && !Array.isArray(colors) 
+                        ? colors[item.name] 
+                        : colors[index % colors.length] 
+                    }}
+                  />
+                  <span className="text-sm font-medium">{item.name}</span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {percentage}%
+                </span>
               </div>
-              <span className="text-sm text-muted-foreground">
-                {Math.round(item.value/data.reduce((a,b) => a + b.value, 0)*100)}%
-              </span>
+              <Progress 
+                value={percentage} 
+                className="h-1.5"
+                style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  '--progress-foreground': typeof colors === 'object' && !Array.isArray(colors) 
+                    ? colors[item.name] 
+                    : colors[index % colors.length]
+                } as React.CSSProperties}
+              />
             </div>
-            <Progress 
-              value={Math.round(item.value/data.reduce((a,b) => a + b.value, 0)*100)} 
-              className="h-1.5"
-              style={{ 
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                '--progress-foreground': typeof colors === 'object' && !Array.isArray(colors) 
-                  ? colors[item.name] 
-                  : colors[index % colors.length]
-              } as React.CSSProperties}
-            />
-          </div>
-        ))}
+          );
+        })}
       </div>
     </ChartCard>
   );
@@ -143,19 +147,11 @@ export const DashboardCharts = () => {
       
       {/* Team workload */}
       <ChartCard title="Team Workload">
-        <ChartContainer 
-          config={{
-            tasks: { 
-              label: "Tasks",
-              color: "#e50914" 
-            }
-          }}
-          className="h-[300px]"
-        >
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={teamData}>
             <XAxis dataKey="name" />
             <YAxis />
-            <ChartTooltip content={<ChartTooltipContent />} />
+            <Tooltip />
             <Bar 
               dataKey="tasks" 
               fill="#e50914" 
@@ -165,28 +161,16 @@ export const DashboardCharts = () => {
               animationBegin={300}
             />
           </BarChart>
-        </ChartContainer>
+        </ResponsiveContainer>
       </ChartCard>
       
       {/* Weekly Task Activity */}
       <ChartCard title="Weekly Task Activity">
-        <ChartContainer 
-          config={{
-            created: { 
-              label: "Created",
-              color: "#3498db" 
-            },
-            completed: { 
-              label: "Completed",
-              color: "#2ecc71" 
-            }
-          }}
-          className="h-[300px]"
-        >
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={weeklyData}>
             <XAxis dataKey="name" />
             <YAxis />
-            <ChartTooltip content={<ChartTooltipContent />} />
+            <Tooltip />
             <Legend />
             <Bar 
               dataKey="created" 
@@ -205,7 +189,7 @@ export const DashboardCharts = () => {
               animationBegin={300}
             />
           </BarChart>
-        </ChartContainer>
+        </ResponsiveContainer>
       </ChartCard>
     </div>
   );
